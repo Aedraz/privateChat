@@ -14,24 +14,45 @@ public class Client {
         BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
 
-        BufferedReader keyboard = new BufferedReader(new InputStreamReader(System.in));
-
-        String userInput;
-        while (true) {
-            System.out.print("Entrez un message (tapez 'quit' pour quitter) : ");
-            userInput = keyboard.readLine();
-
-            output.println(userInput);
-            if (userInput.equalsIgnoreCase("quit")) {
-                break;
+        Thread receiveThread = new Thread(() -> {
+            String serverResponse;
+            try {
+                while ((serverResponse = input.readLine()) != null) {
+                    System.out.println("Message reçu : " + serverResponse);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+        });
 
-            String serverResponse = input.readLine();
-            System.out.println("Réponse du serveur: " + serverResponse);
+        Thread sendThread = new Thread(() -> {
+            BufferedReader keyboard = new BufferedReader(new InputStreamReader(System.in));
+            String userInput;
+            try {
+                while (true) {
+                    System.out.print("Entrez un message (tapez 'quit' pour quitter) : ");
+                    userInput = keyboard.readLine();
+                    output.println(userInput);
+                    if (userInput.equalsIgnoreCase("quit")) {
+                        break;
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
+        receiveThread.start();
+        sendThread.start();
+
+        try {
+            receiveThread.join();
+            sendThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
         System.out.println("Fermeture de la connexion.");
-        keyboard.close();
         input.close();
         output.close();
         socket.close();
