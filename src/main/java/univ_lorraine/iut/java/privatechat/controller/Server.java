@@ -4,11 +4,11 @@ import java.net.*;
 
 public class Server {
     public static void main(String[] args) throws IOException {
-        int port = 1234;
+        int port = 12345;
         ServerSocket serverSocket = new ServerSocket(port);
 
         System.out.println("Serveur en attente de connexion...");
-
+s
         Socket socket = serverSocket.accept();
         System.out.println("Client connecté : " + socket.getInetAddress());
 
